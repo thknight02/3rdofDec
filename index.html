@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Responsive Music Player</title>
+		<style>
+			/* Reset CSS */
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			/* Body chính */
+			body {
+				background-color: black;
+				color: white;
+				font-family: 'Arial', sans-serif;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
+				overflow: hidden;
+			}
+
+			/* Tiêu đề */
+			h1 {
+				font-size: 2rem;
+				margin-bottom: 15px;
+				text-align: center;
+				overflow-wrap: break-word;
+				padding: 0 10px;
+			}
+
+			/* Thêm lớp cho hiệu ứng bông tuyết */
+			.snowflake {
+				position: absolute;
+				top: -10px; /* Bắt đầu ngoài màn hình */
+				color: white;
+				font-size: 1.5rem;
+				z-index: 1000;
+				pointer-events: none;
+				user-select: none;
+				animation: fall linear infinite;
+			}
+
+			/* Hiệu ứng rơi của bông tuyết */
+			@keyframes fall {
+				0% {
+					transform: translateY(-10px);
+				}
+				100% {
+					transform: translateY(100vh); /* Rơi đến đáy màn hình */
+				}
+			}
+
+			/* Container chứa lời bài hát và đĩa nhạc */
+			#content-container {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-wrap: wrap;
+				width: 90%;
+				max-width: 900px;
+				margin-top: 20px;
+			}
+
+			/* Khung chứa lời bài hát */
+			#lyrics-container {
+				width: 60%;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				padding: 10px;
+			}
+
+			/* Lời bài hát */
+			.lyrics-line {
+				font-size: 1.2rem;
+				font-weight: bold;
+				text-align: center;
+				opacity: 0.5;
+				transition: opacity 0.5s, transform 0.5s;
+				margin-bottom: 10px;
+				white-space: pre-wrap; /* Wrap long words */
+				word-break: break-word; /* Allow breaking at word boundaries */
+				overflow-wrap: break-word;
+			}
+
+			/* Câu hát được highlight */
+			.highlight {
+				opacity: 1;
+				color: #ff4081; /* Màu sắc nổi bật */
+				transform: scale(1.1);
+			}
+
+			/* Đĩa nhạc */
+			.vinyl {
+				width: 180px; /* Tăng kích thước đĩa nhạc */
+				height: 180px; /* Tăng kích thước đĩa nhạc */
+				background-image: url('/ka.jpg'); /* Hình ảnh đĩa nhạc */
+				background-size: cover;
+				background-position: center;
+				border-radius: 50%;
+				border: 10px solid #666;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				animation: spin 5s linear infinite; /* Đĩa xoay liên tục */
+				position: relative;
+				margin-right: 20px; /* Khoảng cách với lời bài hát */
+			}
+
+			/* Lõi đĩa nhạc */
+			.vinyl-center {
+				width: 40px; /* Tăng kích thước lõi đĩa */
+				height: 40px; /* Tăng kích thước lõi đĩa */
+				background-image: url('vinyl-center.png'); /* Hình ảnh lõi đĩa */
+				background-size: cover;
+				background-position: center;
+				border-radius: 50%;
+				position: absolute;
+			}
+
+			/* Hiệu ứng xoay cho đĩa nhạc */
+			@keyframes spin {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+
+			/* Responsive: Khi màn hình nhỏ, đĩa nhạc và lời bài hát nằm chồng lên nhau */
+			@media (max-width: 768px) {
+				#content-container {
+					flex-direction: column;
+					align-items: center;
+				}
+				.vinyl {
+					margin-right: 0; /* Không cần khoảng cách khi nằm chồng */
+					margin-bottom: 20px; /* Khoảng cách với lời bài hát */
+				}
+
+				#lyrics-container {
+					width: 90%; /* Chiều rộng của lời bài hát tăng lên */
+				}
+
+				.lyrics-line {
+					font-size: 1rem; /* Giảm kích thước chữ khi màn hình nhỏ */
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Keep Warm With My Sweater Babe!</h1>
+
+		<!-- Container chứa đĩa nhạc và lời bài hát -->
+		<div id="content-container">
+			<!-- Đĩa nhạc -->
+			<div class="vinyl">
+				<div class="vinyl-center"></div>
+				<!-- Lõi đĩa -->
+			</div>
+
+			<!-- Container chứa lời bài hát -->
+			<div id="lyrics-container">
+				<div id="lyrics"></div>
+			</div>
+		</div>
+
+		<!-- Phát nhạc -->
+		<audio id="audio-player" controls>
+			<source
+				src="heather-(audio)-conan-gray-made-with-Voicemod.mp3"
+				type="audio/mpeg"
+			/>
+			Your browser does not support the audio element.
+		</audio>
+
+		<script>
+			// Hàm tạo bông tuyết
+			function createSnowflake() {
+				const snowflake = document.createElement('div')
+				snowflake.classList.add('snowflake')
+
+				// Lựa chọn một ký tự bông tuyết ngẫu nhiên (có thể là bất kỳ ký tự nào)
+				const snowflakeChar = Math.random() > 0.5 ? '❄' : '☃'
+
+				// Đặt nội dung cho bông tuyết
+				snowflake.innerText = snowflakeChar
+
+				// Đặt vị trí bắt đầu ngẫu nhiên cho bông tuyết
+				snowflake.style.left = Math.random() * 100 + 'vw' // Random vị trí x
+				snowflake.style.animationDuration = Math.random() * 3 + 2 + 's' // Random thời gian rơi
+				snowflake.style.animationDelay = Math.random() * 5 + 's' // Random độ trễ
+
+				// Thêm bông tuyết vào body
+				document.body.appendChild(snowflake)
+
+				// Sau khi bông tuyết rơi xong, xóa nó khỏi DOM
+				snowflake.addEventListener('animationend', () => {
+					snowflake.remove()
+				})
+			}
+
+			// Tạo bông tuyết mỗi 300ms
+			setInterval(createSnowflake, 500)
+
+			// Dữ liệu lời bài hát với thời gian
+			const lyrics = [
+				{ time: 4, text: 'I still remember' },
+				{ time: 6, text: '3rd of December' },
+				{ time: 9, text: 'Me in your sweater' },
+				{ time: 12, text: 'You said it looked better' },
+				{ time: 14, text: 'On me than it did you' },
+				{ time: 16, text: 'Only if you knew' },
+				{ time: 19, text: 'How much I liked you' },
+				{ time: 22, text: 'But I watch your eyes as she' },
+				{ time: 24, text: 'Walks by' },
+				{ time: 27, text: 'What a sight for sore eyes' },
+				{ time: 31, text: 'Brighter than the blue sky' },
+				{ time: 38, text: "She's got you mesmerized while I die" },
+			]
+
+			const audio = document.getElementById('audio-player')
+			const lyricsContainer = document.getElementById('lyrics')
+
+			// Tạo các dòng lời bài hát
+			lyrics.forEach((line, index) => {
+				const div = document.createElement('div')
+				div.className = 'lyrics-line'
+				div.id = `line-${index}`
+				div.innerText = line.text
+				lyricsContainer.appendChild(div)
+			})
+
+			// Hiệu ứng cuộn
+			function scrollToCurrentLine(currentIndex) {
+				const container = document.getElementById('lyrics-container')
+				const allLines = document.querySelectorAll('.lyrics-line')
+				const lineHeight = allLines[0].offsetHeight
+
+				// Cuộn tới dòng lời bài hát hiện tại
+				container.scrollTop =
+					lineHeight * currentIndex -
+					container.offsetHeight / 2 +
+					lineHeight / 2
+			}
+
+			// Cập nhật lời bài hát theo thời gian
+			audio.addEventListener('timeupdate', () => {
+				const currentTime = audio.currentTime
+				const currentLineIndex = lyrics.findIndex(
+					(line, index) =>
+						currentTime >= line.time &&
+						(index === lyrics.length - 1 ||
+							currentTime < lyrics[index + 1].time)
+				)
+
+				if (currentLineIndex !== -1) {
+					// Highlight câu hát hiện tại
+					const allLines = document.querySelectorAll('.lyrics-line')
+					allLines.forEach((line) => line.classList.remove('highlight'))
+
+					const currentLineElement = document.getElementById(
+						`line-${currentLineIndex}`
+					)
+					currentLineElement.classList.add('highlight')
+
+					// Cuộn lời bài hát
+					scrollToCurrentLine(currentLineIndex)
+				}
+			})
+		</script>
+	</body>
+</html>
